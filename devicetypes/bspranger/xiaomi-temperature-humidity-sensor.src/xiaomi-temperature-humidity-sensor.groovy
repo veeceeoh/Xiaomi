@@ -321,18 +321,19 @@ private Map getBatteryResult(rawValue) {
 
 def refresh(){
     log.debug "${device.displayName}: refreshing"
-    return zigbee.readAttribute(0x0000, 0x0001) + zigbee.configureReporting(0x0000, 0x0001, 0x21, 600, 21600, 0x01) + zigbee.configureReporting(0x0402, 0x0000, 0x29, 30, 3600, 0x0064)
+    return zigbee.readAttribute(0x0402, 0x0000) + //read current temperature
+    zigbee.readAttribute(0x0405, 0x0000) + //read current humidity
+    zigbee.configureReporting(0x0402, 0x0000, 0x29, 1800, 21600, 0x0064) + //report temp change every 30 minutes (min) to 6 hours (max)
+    zigbee.configureReporting(0x0405, 0x0000, 0x21, 1800, 21600, 0x0064) //report humidity change every 30 minutes (min) to 6 hours (max)
 }
 
 def configure() {
+    log.debug "${device.displayName}: configuring"
     state.battery = 0
     // Device-Watch allows 2 check-in misses from device + ping (plus 1 min lag time)
     // enrolls with default periodic reporting until newer 5 min interval is confirmed
     sendEvent(name: "checkInterval", value: 2 * 60 * 60 + 1 * 60, displayed: false, data: [protocol: "zigbee", hubHardwareId: device.hub.hardwareID])
-
-    // temperature minReportTime 30 seconds, maxReportTime 5 min. Reporting interval if no activity
-    // battery minReport 30 seconds, maxReportTime 6 hrs by default
-    return zigbee.readAttribute(0x0000, 0x0001) + zigbee.configureReporting(0x0000, 0x0001, 0x21, 600, 21600, 0x01) + zigbee.configureReporting(0x0402, 0x0000, 0x29, 30, 3600, 0x0064)
+    return refresh()
 }
 
 def resetBatteryRuntime() {

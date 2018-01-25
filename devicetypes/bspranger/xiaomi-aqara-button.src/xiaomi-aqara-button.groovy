@@ -40,15 +40,6 @@
  *
  */
 
-preferences {
-	input name:"ReleaseTime", type:"number", title:"Minimum time in seconds for a press to clear", defaultValue: 2, displayDuringSetup: false
-        input name:"PressType", type:"enum", options:["Toggle", "Momentary"], description:"Effects how the button toggles", defaultValue:"Toggle", displayDuringSetup: true
-	input name: "dateformat", type: "enum", title: "Set Date Format\n US (MDY) - UK (DMY) - Other (YMD)", description: "Date Format", required: false, options:["US","UK","Other"]
-	input description: "Only change the settings below if you know what you're doing", displayDuringSetup: false, type: "paragraph", element: "paragraph", title: "ADVANCED SETTINGS"
-	input name: "voltsmax", title: "Max Volts\nA battery is at 100% at __ volts\nRange 2.8 to 3.4", type: "decimal", range: "2.8..3.4", defaultValue: 3, required: false
-	input name: "voltsmin", title: "Min Volts\nA battery is at 0% (needs replacing) at __ volts\nRange 2.0 to 2.7", type: "decimal", range: "2..2.7", defaultValue: 2.5, required: false
-} 
-
 metadata {
     definition (name: "Xiaomi Aqara Button", namespace: "bspranger", author: "bspranger") {
         capability "Configuration"
@@ -111,7 +102,15 @@ metadata {
 
         main (["button"])
         details(["button","battery","empty2x2","empty2x2","lastcheckin","batteryRuntime","refresh"])
-   }
+    }
+    preferences {
+	input name: "ReleaseTime", type: "number", title:"Minimum time in seconds for a press to clear", description: “Enter number of seconds”, range: “0..7200”, defaultValue: 2, required: false
+        input name: "PressType", type:"enum", options: ["Toggle", "Momentary"], description: "Effects how the button toggles", defaultValue:"Toggle", required: false
+        input name: "dateformat", type: "enum", title: "Set Date Format\nUS (MDY), UK (DMY), or Other (YMD)", description: "Date Format", defaultValue: "US", required: false, options:["US","UK","Other"]
+        input description: "Only change the settings below if you know what you're doing.", type: "paragraph", element: "paragraph", title: "ADVANCED SETTINGS"
+        input name: "voltsmax", type: "decimal", title: "Max Volts  (range 2.8 to 3.4)\nBattery is at 100% at __ volts", range: "2.8..3.4", defaultValue: 3, required: false
+        input name: "voltsmin", type: "decimal", title: "Min Volts  (range 2.0 to 2.7)\nBattery is at 0% (needs replacing)\nat __ volts", range: "2..2.7", defaultValue: 2.5, required: false
+    }
 }
 
 def parse(String description) {
@@ -215,12 +214,12 @@ private Map getBatteryResult(rawValue) {
     def minVolts
     def maxVolts
 
-    if(voltsmin == null || voltsmin == "")
+    if (voltsmin == null || voltsmin == "")
     	minVolts = 2.5
     else
    	minVolts = voltsmin
     
-    if(voltsmax == null || voltsmax == "")
+    if (voltsmax == null || voltsmax == "")
     	maxVolts = 3.0
     else
 	maxVolts = voltsmax    
